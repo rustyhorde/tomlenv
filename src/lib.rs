@@ -16,10 +16,10 @@
 //!
 //! On the key side, you can use the `Environment` hierarchy defined by this
 //! library (Prod -> Stage -> Test -> Dev -> Local), or you can define your own
-//! custom hierarcy to use with the `Environments` struct.  If your define a
+//! custom hierarchy to use with the `Environments` struct.  If your define a
 //! custom hierarchy you must implement the `Deserialize`, `Serialize`, `Ord`,
 //! `PartialOrd`, and `TryFrom<String>` traits.  See more in the
-//! [Custom Hierarchy](#custom-environment-hierarchy) section below.
+//! [Custom Environment Hierarchy](#custom-environment-hierarchy) section below.
 //!
 //! # Usage
 //! First, define a struct that represents your environment configuration.  For
