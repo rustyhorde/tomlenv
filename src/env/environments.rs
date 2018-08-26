@@ -224,7 +224,7 @@ name = "Local"
         envs.insert(Environment::Dev, dev);
         envs.insert(Environment::Local, local);
 
-        let environments = Environments { envs: envs };
+        let environments = Environments { envs };
 
         match try_encode(&environments) {
             Ok(toml) => assert_eq!(toml, EXPECTED_TOML_STR, "TOML strings match"),

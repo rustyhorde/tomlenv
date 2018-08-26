@@ -10,9 +10,9 @@
 //! The `Environments` struct holds a reference from your environment hierarchy
 //! to the configuraion associated with that particular enviornment i.e.
 //!
-//! * prod_key -> prod_config
-//! * stage_key -> stage_config
-//! * dev_key -> dev_config
+//! * `prod_key` -> `prod_config`
+//! * `stage_key` -> `stage_config`
+//! * `dev_key` -> `dev_config`
 //!
 //! On the key side, you can use the `Environment` hierarchy defined by this
 //! library (Prod -> Stage -> Test -> Dev -> Local), or you can define your own

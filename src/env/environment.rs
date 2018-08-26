@@ -29,7 +29,7 @@ pub enum Environment {
 }
 
 impl<'de> Deserialize<'de> for Environment {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Environment, D::Error>
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
