@@ -293,6 +293,7 @@ extern crate serde;
 extern crate toml;
 
 mod env;
+#[allow(missing_docs)]
 mod error;
 
 pub use env::{Environment, Environments};
