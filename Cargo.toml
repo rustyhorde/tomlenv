@@ -12,15 +12,15 @@ license = "MIT/Apache-2.0"
 name = "tomlenv"
 readme = "README.md"
 repository = "https://github.com/rustyhorde/tomlenv"
-version = "0.1.0"
+version = "0.2.0"
 
 [dependencies]
+clap = "2"
+dirs = "1"
 error-chain = "0"
 serde = "1"
 serde_derive = "1"
 toml = "0"
-clap = "2.32.0"
-dirs = "1.0.3"
 
 [dev-dependencies]
 getset = "0"
