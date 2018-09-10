@@ -19,6 +19,8 @@ error-chain = "0"
 serde = "1"
 serde_derive = "1"
 toml = "0"
+clap = "2.32.0"
+dirs = "1.0.3"
 
 [dev-dependencies]
 getset = "0"

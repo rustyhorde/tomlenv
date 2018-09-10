@@ -78,9 +78,8 @@
 //!
 //! // Deserialize the TOML config into your environment structs.  This example
 //! // is using the `Enrivorment` hierarchy supplied by the library.
-//! let mut buffer = String::new();
 //! let mut cursor = Cursor::new(toml);
-//! let envs: Environments<Environment, MyAppEnv> = Environments::from_reader(&mut cursor, &mut buffer)?;
+//! let envs: Environments<Environment, MyAppEnv> = Environments::from_reader(&mut cursor)?;
 //!
 //! // Check the `Production` environment.
 //! env::set_var("env", "prod");
@@ -251,9 +250,8 @@
 //!
 //! // Deserialize the TOML config into your environment structs.  This example
 //! // is using the custom `MyHierarchy` hierarchy.
-//! let mut buffer = String::new();
 //! let mut cursor = Cursor::new(toml);
-//! let envs: Environments<MyHierarchy, MyAppEnv> = Environments::from_reader(&mut cursor, &mut buffer)?;
+//! let envs: Environments<MyHierarchy, MyAppEnv> = Environments::from_reader(&mut cursor)?;
 //!
 //! // Check the `Production` environment.
 //! env::set_var("env", "prod");
@@ -289,6 +287,8 @@ extern crate getset;
 #[macro_use]
 extern crate serde_derive;
 
+extern crate clap;
+extern crate dirs;
 extern crate serde;
 extern crate toml;
 
