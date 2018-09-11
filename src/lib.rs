@@ -288,6 +288,7 @@ extern crate getset;
 extern crate serde_derive;
 
 extern crate clap;
+#[cfg(test)]
 extern crate dirs;
 extern crate serde;
 extern crate toml;

@@ -8,7 +8,6 @@
 
 //! `tomlenv` environments configuration
 use clap::ArgMatches;
-use dirs;
 use error::{Error, Result};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -112,8 +111,8 @@ where
 {
     /// Load the environments from a path.
     pub fn from_path(path: &Path) -> Result<Self> {
-        let mut buffer = String::new();
         let mut file = File::open(path)?;
+        let mut buffer = String::new();
         file.read_to_string(&mut buffer)?;
         Ok(toml::from_str(&buffer)?)
     }
@@ -146,11 +145,9 @@ where
 {
     type Error = Error;
 
-    fn try_from(matches: &ArgMatches<'a>) -> Result<Self> {
+    fn try_from(matches: &'a ArgMatches<'a>) -> Result<Self> {
         let env_path = if let Some(env_path) = matches.value_of("env_path") {
-            PathBuf::from(env_path)
-        } else if let Some(config_path) = dirs::config_dir() {
-            config_path.join(env!("CARGO_PKG_NAME")).join("env.toml")
+            PathBuf::from(env_path).join("env.toml")
         } else {
             PathBuf::from("env.toml")
         };
@@ -322,7 +319,7 @@ name = "Local"
                     .expect("Unable to write tmpfile");
             }
 
-            let blah = format!("{}", env_toml.display());
+            let blah = format!("{}", data_local_dir.display());
             let arg_vec: Vec<&str> = vec!["env-from-app-matches", "--envpath", &blah];
             let matches = test_cli().get_matches_from(arg_vec);
             match Environments::try_from(&matches) {
