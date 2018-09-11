@@ -7,7 +7,7 @@
 // modified, or distributed except according to those terms.
 
 //! `tomlenv` default environment hierarchy implementation.
-use error::{Error, Result};
+use crate::error::Error::{self, InvalidRuntimeEnvironment};
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::fmt;
@@ -29,7 +29,7 @@ pub enum Environment {
 }
 
 impl<'de> Deserialize<'de> for Environment {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -42,7 +42,7 @@ impl<'de> Deserialize<'de> for Environment {
                 formatter.write_str("any valid environment")
             }
 
-            fn visit_str<E>(self, value: &str) -> ::std::result::Result<Environment, E>
+            fn visit_str<E>(self, value: &str) -> Result<Environment, E>
             where
                 E: de::Error,
             {
@@ -55,7 +55,7 @@ impl<'de> Deserialize<'de> for Environment {
 }
 
 impl Serialize for Environment {
-    fn serialize<S>(&self, serializer: S) -> ::std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -79,14 +79,16 @@ impl fmt::Display for Environment {
 impl<'a> TryFrom<&'a str> for Environment {
     type Error = Error;
 
-    fn try_from(env: &str) -> Result<Self> {
+    fn try_from(env: &str) -> Result<Self, Error> {
         match env {
             "prod" => Ok(Environment::Prod),
             "stage" => Ok(Environment::Stage),
             "test" => Ok(Environment::Test),
             "dev" => Ok(Environment::Dev),
             "local" => Ok(Environment::Local),
-            _ => Err("invalid runtime enviroment".into()),
+            _ => Err(InvalidRuntimeEnvironment {
+                env: env.to_string(),
+            }),
         }
     }
 }
@@ -94,14 +96,16 @@ impl<'a> TryFrom<&'a str> for Environment {
 impl TryFrom<String> for Environment {
     type Error = Error;
 
-    fn try_from(env: String) -> Result<Self> {
+    fn try_from(env: String) -> Result<Self, Error> {
         match &env[..] {
             "prod" => Ok(Environment::Prod),
             "stage" => Ok(Environment::Stage),
             "test" => Ok(Environment::Test),
             "dev" => Ok(Environment::Dev),
             "local" => Ok(Environment::Local),
-            _ => Err("invalid runtime enviroment".into()),
+            _ => Err(InvalidRuntimeEnvironment {
+                env: env.to_string(),
+            }),
         }
     }
 }

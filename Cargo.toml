@@ -2,6 +2,7 @@
 authors = ["Jason Ozias <jason.g.ozias@gmail.com>"]
 description = "Manage your environment configuration with TOML"
 documentation = "https://docs.rs/tomlenv"
+edition = "2018"
 homepage = "https://github.com/rustyhorde/tomlenv"
 keywords = [
     "TOML",
@@ -16,7 +17,7 @@ version = "0.2.1"
 
 [dependencies]
 clap = "2"
-error-chain = "0"
+failure = "0"
 serde = "1"
 serde_derive = "1"
 toml = "0"

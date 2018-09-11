@@ -36,15 +36,16 @@
 //! environment specified by the environment variable `env`.
 //!
 //! ```
+//! # #[macro_use] extern crate failure;
 //! # #[macro_use] extern crate getset;
 //! # #[macro_use] extern crate serde_derive;
-//! # extern crate tomlenv;
 //! #
-//! # use tomlenv::{Environment, Environments, Result};
+//! # use failure::Error;
+//! # use tomlenv::{Environment, Environments};
 //! # use std::env;
 //! # use std::io::Cursor;
 //! #
-//! # fn foo() -> Result<()> {
+//! # fn foo() -> Result<(), Error> {
 //! /// Define your environment specific configuration.
 //! /// *NOTE*: This must implement `Deserialize` and `Serialize`
 //! #[derive(Debug, Deserialize, Getters, Serialize)]
@@ -120,18 +121,21 @@
 //! ```
 //! # #![feature(try_from)]
 //! #
+//! # #[macro_use] extern crate failure;
 //! # #[macro_use] extern crate getset;
 //! # #[macro_use] extern crate serde_derive;
 //! #
 //! # extern crate serde;
 //! # extern crate tomlenv;
 //! #
+//! # use failure::Error as FailureError;
 //! # use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 //! # use std::convert::TryFrom;
 //! # use std::env;
 //! # use std::fmt;
 //! # use std::io::Cursor;
-//! # use tomlenv::{Environments, Error, Result};
+//! # use tomlenv::Environments;
+//! # use tomlenv::Error::{self, InvalidRuntimeEnvironment};
 //! #
 //! #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 //! pub enum MyHierarchy {
@@ -160,13 +164,15 @@
 //! impl<'a> TryFrom<&'a str> for MyHierarchy {
 //!     type Error = Error;
 //!
-//!     fn try_from(env: &str) -> Result<Self> {
+//!     fn try_from(env: &str) -> Result<Self, Error> {
 //!         match env {
 //!             "prod" => Ok(MyHierarchy::Prod),
 //!             "ce" => Ok(MyHierarchy::Cert),
 //!             "sb" => Ok(MyHierarchy::Sandbox),
 //!             "local" => Ok(MyHierarchy::Local),
-//!             _ => Err("invalid runtime enviroment".into()),
+//!             _ => Err(InvalidRuntimeEnvironment {
+//!                 env: env.to_string(),
+//!             }),
 //!         }
 //!     }
 //! }
@@ -174,19 +180,21 @@
 //! impl TryFrom<String> for MyHierarchy {
 //!     type Error = Error;
 //!
-//!     fn try_from(env: String) -> Result<Self> {
+//!     fn try_from(env: String) -> Result<Self, Error> {
 //!         match &env[..] {
 //!             "prod" => Ok(MyHierarchy::Prod),
 //!             "ce" => Ok(MyHierarchy::Cert),
 //!             "sb" => Ok(MyHierarchy::Sandbox),
 //!             "local" => Ok(MyHierarchy::Local),
-//!             _ => Err("invalid runtime enviroment".into()),
+//!             _ => Err(InvalidRuntimeEnvironment {
+//!                 env: env.to_string(),
+//!             }),
 //!         }
 //!     }
 //! }
 //!
 //! impl Serialize for MyHierarchy {
-//!     fn serialize<S>(&self, serializer: S) -> ::std::result::Result<S::Ok, S::Error>
+//!     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 //!     where
 //!         S: Serializer,
 //!     {
@@ -195,7 +203,7 @@
 //! }
 //!
 //! impl<'de> Deserialize<'de> for MyHierarchy {
-//!     fn deserialize<D>(deserializer: D) -> ::std::result::Result<MyHierarchy, D::Error>
+//!     fn deserialize<D>(deserializer: D) -> Result<MyHierarchy, D::Error>
 //!     where
 //!         D: Deserializer<'de>,
 //!     {
@@ -208,7 +216,7 @@
 //!                 formatter.write_str("any valid environment")
 //!             }
 //!
-//!             fn visit_str<E>(self, value: &str) -> ::std::result::Result<MyHierarchy, E>
+//!             fn visit_str<E>(self, value: &str) -> Result<MyHierarchy, E>
 //!             where
 //!                 E: de::Error,
 //!             {
@@ -230,7 +238,7 @@
 //!   key: Option<String>,
 //! }
 //! #
-//! # fn foo() -> Result<()> {
+//! # fn foo() -> Result<(), FailureError> {
 //!
 //! /// Grab your environment TOML.  This would usually be in a file and can
 //! /// be read to a string such as below.
@@ -266,6 +274,10 @@
 //! assert_eq!(current.key(), &None);
 //! #   Ok(())
 //! # }
+//!
+//! fn main() {
+//!     foo().unwrap()
+//! }
 //! ```
 #![feature(try_from)]
 #![deny(
@@ -280,22 +292,15 @@
 )]
 
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 #[cfg(test)]
 #[macro_use]
 extern crate getset;
 #[macro_use]
 extern crate serde_derive;
 
-extern crate clap;
-#[cfg(test)]
-extern crate dirs;
-extern crate serde;
-extern crate toml;
-
 mod env;
-#[allow(missing_docs)]
 mod error;
 
-pub use env::{Environment, Environments};
-pub use error::{Error, ErrorKind, Result};
+pub use crate::env::{Environment, Environments};
+pub use crate::error::Error;
