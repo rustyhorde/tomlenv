@@ -114,10 +114,17 @@ where
 {
     /// Load the environments from a path.
     pub fn from_path(path: &Path) -> Result<Self, Error> {
-        let mut file = File::open(path)?;
-        let mut buffer = String::new();
-        file.read_to_string(&mut buffer)?;
-        Ok(toml::from_str(&buffer)?)
+        match File::open(path) {
+            Ok(mut file) =>{
+                let mut buffer = String::new();
+                file.read_to_string(&mut buffer)?;
+                Ok(toml::from_str(&buffer)?)
+            }
+            Err(e) => {
+                eprintln!("Unable to read '{}'", path.display());
+                Err(e.into())
+            }
+        }
     }
 
     /// Load the environments from a reader.
