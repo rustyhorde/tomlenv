@@ -115,7 +115,7 @@ where
     /// Load the environments from a path.
     pub fn from_path(path: &Path) -> Result<Self, Error> {
         match File::open(path) {
-            Ok(mut file) =>{
+            Ok(mut file) => {
                 let mut buffer = String::new();
                 file.read_to_string(&mut buffer)?;
                 Ok(toml::from_str(&buffer)?)
