@@ -132,7 +132,12 @@ where
 
     /// Get the current environment
     pub fn current(&self) -> Result<&T, Error> {
-        let environment = TryFrom::try_from(env::var("env")?)?;
+        self.current_from("env")
+    }
+
+    /// Get the current environment from the given variable
+    pub fn current_from(&self, var: &'static str) -> Result<&T, Error> {
+        let environment = TryFrom::try_from(env::var(var)?)?;
         Ok(self
             .envs
             .get(&environment)
@@ -173,6 +178,7 @@ mod test {
     use std::io::{BufWriter, Cursor, Write};
     use toml;
 
+    const TOMLENV: &str = "TOMLENV";
     const EXPECTED_TOML_STR: &str = r#"[envs.prod]
 name = "Production"
 key = "abcd-123-efg-45"
@@ -212,6 +218,16 @@ name = "Local"
         expected: &str,
     ) -> Result<(), Error> {
         let current = envs.current()?;
+        assert_eq!(current.name(), expected);
+        Ok(())
+    }
+
+    fn try_current_from(
+        var: &'static str,
+        envs: &Environments<Environment, RuntimeEnv>,
+        expected: &str,
+    ) -> Result<(), Error> {
+        let current = envs.current_from(var)?;
         assert_eq!(current.name(), expected);
         Ok(())
     }
@@ -301,6 +317,40 @@ name = "Local"
                 }
                 env::set_var("env", "local");
                 match try_current(envs, "Local") {
+                    Ok(_) => assert!(true, "Found Local Env"),
+                    Err(_) => assert!(false, "Current is not Local!"),
+                }
+            }
+            Err(_) => assert!(false, "Unable to decode TOML to Environments!"),
+        }
+    }
+
+    #[test]
+    fn current_from() {
+        match try_decode(EXPECTED_TOML_STR) {
+            Ok(ref envs) => {
+                env::set_var(TOMLENV, "prod");
+                match try_current_from(TOMLENV, envs, "Production") {
+                    Ok(_) => assert!(true, "Found Production Env"),
+                    Err(_) => assert!(false, "Current is not Production!"),
+                }
+                env::set_var(TOMLENV, "stage");
+                match try_current_from(TOMLENV, envs, "Stage") {
+                    Ok(_) => assert!(true, "Found Stage Env"),
+                    Err(_) => assert!(false, "Current is not Stage!"),
+                }
+                env::set_var(TOMLENV, "test");
+                match try_current_from(TOMLENV, envs, "Test") {
+                    Ok(_) => assert!(true, "Found Test Env"),
+                    Err(_) => assert!(false, "Current is not Test!"),
+                }
+                env::set_var(TOMLENV, "dev");
+                match try_current_from(TOMLENV, envs, "Development") {
+                    Ok(_) => assert!(true, "Found Development Env"),
+                    Err(_) => assert!(false, "Current is not Development!"),
+                }
+                env::set_var(TOMLENV, "local");
+                match try_current_from(TOMLENV, envs, "Local") {
                     Ok(_) => assert!(true, "Found Local Env"),
                     Err(_) => assert!(false, "Current is not Local!"),
                 }
