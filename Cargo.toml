@@ -13,7 +13,7 @@ license = "MIT/Apache-2.0"
 name = "tomlenv"
 readme = "README.md"
 repository = "https://github.com/rustyhorde/tomlenv"
-version = "0.3.1"
+version = "0.3.2"
 
 [dependencies]
 clap = "2"
