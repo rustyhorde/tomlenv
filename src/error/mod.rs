@@ -12,10 +12,7 @@
 #[derive(Debug, Fail)]
 pub enum Error {
     /// Generated when try_from cannot convert a string to a runtime environment.
-    #[fail(
-        display = "the given runtime environment '{}' is invalid!",
-        env
-    )]
+    #[fail(display = "the given runtime environment '{}' is invalid!", env)]
     InvalidRuntimeEnvironment {
         /// The `env` string that could not be converted into a runtime environment.
         env: String,
