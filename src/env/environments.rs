@@ -7,8 +7,8 @@
 // modified, or distributed except according to those terms.
 
 //! `tomlenv` environments configuration
-use clap::ArgMatches;
 use crate::error::Error::InvalidCurrentEnvironment;
+use clap::ArgMatches;
 use failure::Error;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -174,8 +174,8 @@ where
 #[cfg(test)]
 mod test {
     use super::Environments;
-    use clap::{App, Arg};
     use crate::env::Environment;
+    use clap::{App, Arg};
     use dirs;
     use failure::Error;
     use std::collections::BTreeMap;
