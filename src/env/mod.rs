@@ -10,5 +10,5 @@
 mod environment;
 mod environments;
 
-pub use self::environment::Environment;
+crate use environment::Environment;
 pub use self::environments::Environments;

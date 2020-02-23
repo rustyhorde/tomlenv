@@ -12,12 +12,8 @@ use clap::ArgMatches;
 use failure::Error;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use std::collections::BTreeMap;
-use std::convert::TryFrom;
-use std::env;
-use std::fs::File;
-use std::io::Read;
-use std::path::{Path, PathBuf};
+use serde_derive::{Deserialize, Serialize};
+use std::{collections::BTreeMap, convert::TryFrom, env, fs::File, io::Read, path::{Path, PathBuf}};
 use toml;
 
 /// Hold environment specific data as a map from your environment hierarchy key to data struct
@@ -97,7 +93,7 @@ use toml;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Environments<S, T>
 where
     S: Ord,
@@ -117,7 +113,7 @@ where
         match File::open(path) {
             Ok(mut file) => {
                 let mut buffer = String::new();
-                file.read_to_string(&mut buffer)?;
+                let _ = file.read_to_string(&mut buffer)?;
                 Ok(toml::from_str(&buffer)?)
             }
             Err(e) => {
@@ -133,7 +129,7 @@ where
         R: Read,
     {
         let mut buffer = String::new();
-        reader.read_to_string(&mut buffer)?;
+        let _ = reader.read_to_string(&mut buffer)?;
         Ok(toml::from_str(&buffer)?)
     }
 
@@ -178,11 +174,9 @@ mod test {
     use clap::{App, Arg};
     use dirs;
     use failure::Error;
-    use std::collections::BTreeMap;
-    use std::convert::TryFrom;
-    use std::env;
-    use std::fs::{remove_file, OpenOptions};
-    use std::io::{BufWriter, Cursor, Write};
+    use getset::Getters;
+    use serde_derive::{Deserialize, Serialize};
+    use std::{collections::BTreeMap, convert::TryFrom, env, fs::{remove_file, OpenOptions}, io::{BufWriter, Cursor, Write}};
     use toml;
 
     const TOMLENV: &str = "TOMLENV";
@@ -284,11 +278,11 @@ name = "Local"
             name: "Local".to_string(),
             key: None,
         };
-        envs.insert(Environment::Prod, prod);
-        envs.insert(Environment::Stage, stage);
-        envs.insert(Environment::Test, test);
-        envs.insert(Environment::Dev, dev);
-        envs.insert(Environment::Local, local);
+        let _ = envs.insert(Environment::Prod, prod);
+        let _ = envs.insert(Environment::Stage, stage);
+        let _ = envs.insert(Environment::Test, test);
+        let _ = envs.insert(Environment::Dev, dev);
+        let _ = envs.insert(Environment::Local, local);
 
         let environments = Environments { envs };
 

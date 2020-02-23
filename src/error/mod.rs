@@ -7,6 +7,7 @@
 // modified, or distributed except according to those terms.
 
 //! `tomlenv` errors
+use failure::Fail;
 
 /// `tomlenv` errors
 #[derive(Debug, Fail)]

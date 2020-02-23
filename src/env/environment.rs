@@ -38,7 +38,7 @@ impl<'de> Deserialize<'de> for Environment {
         impl<'de> de::Visitor<'de> for EnvironmentVisitor {
             type Value = Environment;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("any valid environment")
             }
 
@@ -64,7 +64,7 @@ impl Serialize for Environment {
 }
 
 impl fmt::Display for Environment {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let env = match *self {
             Environment::Prod => "prod",
             Environment::Stage => "stage",

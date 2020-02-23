@@ -279,28 +279,90 @@
 //!     foo().unwrap()
 //! }
 //! ```
-#![feature(try_from)]
+#![feature(crate_visibility_modifier)]
 #![deny(
-    missing_docs,
-    missing_debug_implementations,
+    absolute_paths_not_starting_with_crate,
+    anonymous_parameters,
+    array_into_iter,
+    bare_trait_objects,
+    dead_code,
+    deprecated,
+    deprecated_in_future,
+    elided_lifetimes_in_paths,
+    ellipsis_inclusive_range_patterns,
+    explicit_outlives_requirements,
+    exported_private_dependencies,
+    illegal_floating_point_literal_pattern,
+    improper_ctypes,
+    incomplete_features,
+    indirect_structural_match,
+    intra_doc_link_resolution_failure,
+    invalid_value,
+    irrefutable_let_patterns,
+    keyword_idents,
+    late_bound_lifetime_arguments,
+    macro_use_extern_crate,
+    meta_variable_misuse,
     missing_copy_implementations,
+    missing_debug_implementations,
+    // missing_doc_code_examples,
+    missing_docs,
+    mutable_borrow_reservation_conflict,
+    no_mangle_generic_items,
+    non_ascii_idents,
+    non_camel_case_types,
+    non_shorthand_field_patterns,
+    non_snake_case,
+    non_upper_case_globals,
+    overlapping_patterns,
+    path_statements,
+    private_doc_tests,
+    private_in_public,
+    proc_macro_derive_resolution_fallback,
+    redundant_semicolon,
+    renamed_and_removed_lints,
+    safe_packed_borrows,
+    stable_features,
+    trivial_bounds,
     trivial_casts,
     trivial_numeric_casts,
+    type_alias_bounds,
+    tyvar_behind_raw_pointer,
+    unconditional_recursion,
+    unknown_lints,
+    unnameable_test_items,
+    unreachable_code,
+    unreachable_patterns,
+    unreachable_pub,
     unsafe_code,
+    // unstable_features,
+    unstable_name_collisions,
+    unused_allocation,
+    unused_assignments,
+    unused_attributes,
+    unused_comparisons,
+    unused_doc_comments,
+    unused_extern_crates,
+    unused_features,
     unused_import_braces,
-    unused_qualifications
+    unused_imports,
+    unused_labels,
+    unused_lifetimes,
+    unused_macros,
+    unused_must_use,
+    unused_mut,
+    unused_parens,
+    unused_qualifications,
+    unused_results,
+    unused_unsafe,
+    unused_variables,
+    variant_size_differences,
+    where_clauses_object_safety,
+    while_true
 )]
-
-#[macro_use]
-extern crate failure;
-#[cfg(test)]
-#[macro_use]
-extern crate getset;
-#[macro_use]
-extern crate serde_derive;
 
 mod env;
 mod error;
 
-pub use crate::env::{Environment, Environments};
-pub use crate::error::Error;
+pub use env::{Environment::{Prod, Stage, Test, Dev, Local}, Environments};
+pub use error::Error;
