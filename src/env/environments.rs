@@ -11,7 +11,7 @@ use crate::error::{Error, Result};
 use clap::ArgMatches;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::{Deserialize as De, Serialize as Ser};
 use std::{
     collections::BTreeMap,
     convert::TryFrom,
@@ -95,7 +95,7 @@ use toml;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, De, Ser)]
 pub struct Environments<S, T>
 where
     S: Ord,
