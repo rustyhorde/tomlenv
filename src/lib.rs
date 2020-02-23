@@ -36,16 +36,13 @@
 //! environment specified by the environment variable `env`.
 //!
 //! ```
-//! # #[macro_use] extern crate failure;
-//! # #[macro_use] extern crate getset;
-//! # #[macro_use] extern crate serde_derive;
-//! #
-//! # use failure::Error;
-//! # use tomlenv::{Environment, Environments};
+//! # use tomlenv::{Environment, Environments, Error, Result};
+//! # use getset::Getters;
+//! # use serde_derive::{Deserialize, Serialize};
 //! # use std::env;
 //! # use std::io::Cursor;
 //! #
-//! # fn foo() -> Result<(), Error> {
+//! # fn foo() -> Result<()> {
 //! /// Define your environment specific configuration.
 //! /// *NOTE*: This must implement `Deserialize` and `Serialize`
 //! #[derive(Debug, Deserialize, Getters, Serialize)]
@@ -119,23 +116,14 @@
 //! serializer/deserializer, but that shouldn't be necessary in all cases.
 //!
 //! ```
-//! # #![feature(try_from)]
-//! #
-//! # #[macro_use] extern crate failure;
-//! # #[macro_use] extern crate getset;
-//! # #[macro_use] extern crate serde_derive;
-//! #
-//! # extern crate serde;
-//! # extern crate tomlenv;
-//! #
-//! # use failure::Error as FailureError;
+//! # use getset::Getters;
+//! # use serde_derive::{Deserialize as De, Serialize as Ser};
 //! # use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 //! # use std::convert::TryFrom;
 //! # use std::env;
 //! # use std::fmt;
 //! # use std::io::Cursor;
-//! # use tomlenv::Environments;
-//! # use tomlenv::Error::{self, InvalidRuntimeEnvironment};
+//! # use tomlenv::{Environments, Error, Result};
 //! #
 //! #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 //! pub enum MyHierarchy {
@@ -164,15 +152,13 @@
 //! impl<'a> TryFrom<&'a str> for MyHierarchy {
 //!     type Error = Error;
 //!
-//!     fn try_from(env: &str) -> Result<Self, Error> {
+//!     fn try_from(env: &str) -> Result<Self> {
 //!         match env {
 //!             "prod" => Ok(MyHierarchy::Prod),
 //!             "ce" => Ok(MyHierarchy::Cert),
 //!             "sb" => Ok(MyHierarchy::Sandbox),
 //!             "local" => Ok(MyHierarchy::Local),
-//!             _ => Err(InvalidRuntimeEnvironment {
-//!                 env: env.to_string(),
-//!             }),
+//!             _ => Err(Error::invalid_runtime_environment(env)),
 //!         }
 //!     }
 //! }
@@ -180,21 +166,19 @@
 //! impl TryFrom<String> for MyHierarchy {
 //!     type Error = Error;
 //!
-//!     fn try_from(env: String) -> Result<Self, Error> {
+//!     fn try_from(env: String) -> Result<Self> {
 //!         match &env[..] {
 //!             "prod" => Ok(MyHierarchy::Prod),
 //!             "ce" => Ok(MyHierarchy::Cert),
 //!             "sb" => Ok(MyHierarchy::Sandbox),
 //!             "local" => Ok(MyHierarchy::Local),
-//!             _ => Err(InvalidRuntimeEnvironment {
-//!                 env: env.to_string(),
-//!             }),
+//!             _ => Err(Error::invalid_runtime_environment(&env)),
 //!         }
 //!     }
 //! }
 //!
 //! impl Serialize for MyHierarchy {
-//!     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//!     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
 //!     where
 //!         S: Serializer,
 //!     {
@@ -203,7 +187,7 @@
 //! }
 //!
 //! impl<'de> Deserialize<'de> for MyHierarchy {
-//!     fn deserialize<D>(deserializer: D) -> Result<MyHierarchy, D::Error>
+//!     fn deserialize<D>(deserializer: D) -> std::result::Result<MyHierarchy, D::Error>
 //!     where
 //!         D: Deserializer<'de>,
 //!     {
@@ -216,7 +200,7 @@
 //!                 formatter.write_str("any valid environment")
 //!             }
 //!
-//!             fn visit_str<E>(self, value: &str) -> Result<MyHierarchy, E>
+//!             fn visit_str<E>(self, value: &str) -> std::result::Result<MyHierarchy, E>
 //!             where
 //!                 E: de::Error,
 //!             {
@@ -228,7 +212,7 @@
 //!     }
 //! }
 //!
-//! #[derive(Debug, Deserialize, Getters, Serialize)]
+//! #[derive(Debug, De, Getters, Ser)]
 //! struct MyAppEnv {
 //!   /// The display name of this environment.
 //!   #[get]
@@ -238,7 +222,7 @@
 //!   key: Option<String>,
 //! }
 //! #
-//! # fn foo() -> Result<(), FailureError> {
+//! # fn foo() -> Result<()> {
 //!
 //! /// Grab your environment TOML.  This would usually be in a file and can
 //! /// be read to a string such as below.
@@ -279,7 +263,7 @@
 //!     foo().unwrap()
 //! }
 //! ```
-#![feature(crate_visibility_modifier)]
+#![feature(crate_visibility_modifier, error_iter)]
 #![deny(
     absolute_paths_not_starting_with_crate,
     anonymous_parameters,
@@ -316,7 +300,7 @@
     non_upper_case_globals,
     overlapping_patterns,
     path_statements,
-    private_doc_tests,
+    // private_doc_tests,
     private_in_public,
     proc_macro_derive_resolution_fallback,
     redundant_semicolon,
@@ -364,5 +348,6 @@
 mod env;
 mod error;
 
-pub use env::{Environment::{Prod, Stage, Test, Dev, Local}, Environments};
-pub use error::Error;
+pub use env::Environment;
+pub use env::Environments;
+pub use error::{Error, Result};

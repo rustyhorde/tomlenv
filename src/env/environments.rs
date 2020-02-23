@@ -7,13 +7,19 @@
 // modified, or distributed except according to those terms.
 
 //! `tomlenv` environments configuration
-use crate::error::Error::InvalidCurrentEnvironment;
+use crate::error::{Error, Result};
 use clap::ArgMatches;
-use failure::Error;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_derive::{Deserialize, Serialize};
-use std::{collections::BTreeMap, convert::TryFrom, env, fs::File, io::Read, path::{Path, PathBuf}};
+use std::{
+    collections::BTreeMap,
+    convert::TryFrom,
+    env,
+    fs::File,
+    io::Read,
+    path::{Path, PathBuf},
+};
 use toml;
 
 /// Hold environment specific data as a map from your environment hierarchy key to data struct
@@ -22,17 +28,13 @@ use toml;
 /// # Example
 ///
 /// ```
-/// # #[macro_use] extern crate failure;
-/// # #[macro_use] extern crate getset;
-/// # #[macro_use] extern crate serde_derive;
-/// # extern crate tomlenv;
-/// #
-/// # use failure::Error as FailureError;
-/// # use tomlenv::{Environment, Environments, Error};
+/// # use tomlenv::{Environment, Environments, Error, Result};
 /// # use std::env;
 /// # use std::io::Cursor;
+/// # use serde_derive::{Deserialize, Serialize};
+/// # use getset::Getters;
 /// #
-/// # fn foo() -> Result<(), FailureError> {
+/// # fn foo() -> Result<()> {
 /// // Your environment specific data struct
 /// // *NOTE*: This must implement `Deserialize` and `Serialize`
 /// #[derive(Debug, Deserialize, Getters, Serialize)]
@@ -106,10 +108,9 @@ impl<S, T> Environments<S, T>
 where
     T: DeserializeOwned + Serialize,
     S: DeserializeOwned + Serialize + Ord + PartialOrd + TryFrom<String>,
-    Error: From<<S as TryFrom<String>>::Error>,
 {
     /// Load the environments from a path.
-    pub fn from_path(path: &Path) -> Result<Self, Error> {
+    pub fn from_path(path: &Path) -> Result<Self> {
         match File::open(path) {
             Ok(mut file) => {
                 let mut buffer = String::new();
@@ -124,7 +125,7 @@ where
     }
 
     /// Load the environments from a reader.
-    pub fn from_reader<R>(reader: &mut R) -> Result<Self, Error>
+    pub fn from_reader<R>(reader: &mut R) -> Result<Self>
     where
         R: Read,
     {
@@ -134,17 +135,18 @@ where
     }
 
     /// Get the current environment
-    pub fn current(&self) -> Result<&T, Error> {
+    pub fn current(&self) -> Result<&T> {
         self.current_from("env")
     }
 
     /// Get the current environment from the given variable
-    pub fn current_from(&self, var: &'static str) -> Result<&T, Error> {
-        let environment = TryFrom::try_from(env::var(var)?)?;
+    pub fn current_from(&self, var: &'static str) -> Result<&T> {
+        let environment = TryFrom::try_from(env::var(var)?)
+            .map_err(|_e| Error::invalid_current_environment(var))?;
         Ok(self
             .envs
             .get(&environment)
-            .ok_or_else(|| InvalidCurrentEnvironment)?)
+            .ok_or_else(|| Error::invalid_current_environment(var))?)
     }
 }
 
@@ -152,11 +154,10 @@ impl<'a, S, T> TryFrom<&'a ArgMatches<'a>> for Environments<S, T>
 where
     T: DeserializeOwned + Serialize,
     S: DeserializeOwned + Serialize + Ord + PartialOrd + TryFrom<String>,
-    Error: From<<S as TryFrom<String>>::Error>,
 {
     type Error = Error;
 
-    fn try_from(matches: &'a ArgMatches<'a>) -> Result<Self, Error> {
+    fn try_from(matches: &'a ArgMatches<'a>) -> Result<Self> {
         let env_path = if let Some(env_path) = matches.value_of("env_path") {
             PathBuf::from(env_path).join("env.toml")
         } else {
@@ -170,13 +171,18 @@ where
 #[cfg(test)]
 mod test {
     use super::Environments;
-    use crate::env::Environment;
+    use crate::{env::Environment, error::Result};
     use clap::{App, Arg};
     use dirs;
-    use failure::Error;
     use getset::Getters;
     use serde_derive::{Deserialize, Serialize};
-    use std::{collections::BTreeMap, convert::TryFrom, env, fs::{remove_file, OpenOptions}, io::{BufWriter, Cursor, Write}};
+    use std::{
+        collections::BTreeMap,
+        convert::TryFrom,
+        env,
+        fs::{remove_file, OpenOptions},
+        io::{BufWriter, Cursor, Write},
+    };
     use toml;
 
     const TOMLENV: &str = "TOMLENV";
@@ -205,19 +211,16 @@ name = "Local"
         key: Option<String>,
     }
 
-    fn try_decode(toml: &str) -> Result<Environments<Environment, RuntimeEnv>, Error> {
+    fn try_decode(toml: &str) -> Result<Environments<Environment, RuntimeEnv>> {
         let mut cursor = Cursor::new(toml);
         Ok(Environments::from_reader(&mut cursor)?)
     }
 
-    fn try_encode(environments: &Environments<Environment, RuntimeEnv>) -> Result<String, Error> {
+    fn try_encode(environments: &Environments<Environment, RuntimeEnv>) -> Result<String> {
         Ok(toml::to_string(environments)?)
     }
 
-    fn try_current(
-        envs: &Environments<Environment, RuntimeEnv>,
-        expected: &str,
-    ) -> Result<(), Error> {
+    fn try_current(envs: &Environments<Environment, RuntimeEnv>, expected: &str) -> Result<()> {
         let current = envs.current()?;
         assert_eq!(current.name(), expected);
         Ok(())
@@ -227,7 +230,7 @@ name = "Local"
         var: &'static str,
         envs: &Environments<Environment, RuntimeEnv>,
         expected: &str,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let current = envs.current_from(var)?;
         assert_eq!(current.name(), expected);
         Ok(())

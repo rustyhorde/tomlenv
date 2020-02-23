@@ -17,11 +17,10 @@ version = "0.3.2"
 
 [dependencies]
 clap = "2"
-failure = "0"
+getset = "0"
 serde = "1"
 serde_derive = "1"
 toml = "0"
 
 [dev-dependencies]
-getset = "0"
 dirs = "1"
