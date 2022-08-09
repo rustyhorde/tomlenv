@@ -17,10 +17,10 @@ version = "0.4.1"
 
 [dependencies]
 clap = "2"
-getset = "0"
+getset = "0.1"
 serde = "1"
 serde_derive = "1"
-toml = "0"
+toml = "0.5"
 
 [dev-dependencies]
 dirs = "1"
