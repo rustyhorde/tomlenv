@@ -10,9 +10,9 @@
 mod codes;
 mod sources;
 
-crate use codes::ErrCode;
+pub(crate) use codes::ErrCode;
 use getset::Getters;
-crate use sources::ErrSource;
+pub(crate) use sources::ErrSource;
 use std::fmt;
 
 /// A result that must include an `tomlenv::Error`
@@ -20,7 +20,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 /// An error from the library
 #[derive(Debug, Getters)]
-#[get = "crate"]
+#[getset(get = "pub(crate)")]
+#[allow(dead_code)]
 pub struct Error {
     /// the code
     code: ErrCode,
@@ -33,13 +34,13 @@ pub struct Error {
 }
 
 impl Error {
-    crate fn new<U>(code: ErrCode, reason: U, source: Option<ErrSource>) -> Self
+    pub(crate) fn new<U>(code: ErrCode, reason: U, source: Option<ErrSource>) -> Self
     where
         U: Into<String>,
     {
         let reason = reason.into();
         let code_str: &str = code.into();
-        let description = format!("{}: {}", code_str, reason.clone());
+        let description = format!("{code_str}: {reason}");
 
         Self {
             code,
@@ -50,18 +51,19 @@ impl Error {
     }
 
     /// Generate an invalid runtime environment error
+    #[must_use]
     pub fn invalid_runtime_environment(env: &str) -> Self {
         Self::new(
             ErrCode::Env,
-            format!("invalid runtime environment '{}'", env),
+            format!("invalid runtime environment '{env}'"),
             None,
         )
     }
 
-    crate fn invalid_current_environment(var: &str) -> Self {
+    pub(crate) fn invalid_current_environment(var: &str) -> Self {
         Self::new(
             ErrCode::Env,
-            format!("invalid current environment '{}'", var),
+            format!("invalid current environment '{var}'"),
             None,
         )
     }
@@ -79,15 +81,7 @@ impl std::error::Error for Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let err: &(dyn std::error::Error) = self;
-        let mut iter = err.chain();
-        let _skip_me = iter.next();
-        write!(f, "{}", self.description)?;
-
-        while let Some(e) = iter.next() {
-            write!(f, "{}", e)?;
-        }
-        Ok(())
+        write!(f, "{}", self.description)
     }
 }
 
@@ -95,8 +89,8 @@ impl From<&str> for Error {
     fn from(text: &str) -> Self {
         let split = text.split(':');
         let vec = split.collect::<Vec<&str>>();
-        let code = vec.get(0).unwrap_or_else(|| &"");
-        let reason = vec.get(1).unwrap_or_else(|| &"");
+        let code = vec.first().unwrap_or(&"");
+        let reason = vec.get(1).unwrap_or(&"");
         Self::new((*code).into(), *reason, None)
     }
 }
@@ -105,8 +99,8 @@ impl From<String> for Error {
     fn from(text: String) -> Self {
         let split = text.split(':');
         let vec = split.collect::<Vec<&str>>();
-        let code = vec.get(0).unwrap_or_else(|| &"");
-        let reason = vec.get(1).unwrap_or_else(|| &"");
+        let code = vec.first().unwrap_or(&"");
+        let reason = vec.get(1).unwrap_or(&"");
         Self::new((*code).into(), *reason, None)
     }
 }

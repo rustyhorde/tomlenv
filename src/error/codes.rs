@@ -11,7 +11,7 @@ use std::fmt;
 
 /// Error Codes
 #[derive(Copy, Clone, Debug)]
-crate enum ErrCode {
+pub(crate) enum ErrCode {
     /// An error caused by the client
     Client,
     /// An environmental error
@@ -52,27 +52,26 @@ impl fmt::Display for ErrCode {
     }
 }
 
-impl Into<&str> for ErrCode {
+impl From<ErrCode> for &str {
     #[must_use]
-    fn into(self) -> &'static str {
-        match self {
-            Self::Client => "client",
-            Self::Env => "env",
-            Self::Framework => "framework",
-            Self::HttpClient => "httpclient",
-            Self::Io => "io",
-            Self::Parse => "parse",
-            Self::Server => "server",
-            Self::Unauthorized => "unauthorized",
-            Self::Unknown => "unknown",
+    fn from(value: ErrCode) -> &'static str {
+        match value {
+            ErrCode::Client => "client",
+            ErrCode::Env => "env",
+            ErrCode::Framework => "framework",
+            ErrCode::HttpClient => "httpclient",
+            ErrCode::Io => "io",
+            ErrCode::Parse => "parse",
+            ErrCode::Server => "server",
+            ErrCode::Unauthorized => "unauthorized",
+            ErrCode::Unknown => "unknown",
         }
     }
 }
 
-impl Into<String> for ErrCode {
-    #[must_use]
-    fn into(self) -> String {
-        let tmp: &str = self.into();
+impl From<ErrCode> for String {
+    fn from(value: ErrCode) -> String {
+        let tmp: &str = value.into();
         tmp.to_string()
     }
 }

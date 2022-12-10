@@ -46,10 +46,10 @@ dep_error!(
     "There was an error serializing TOML"
 );
 
-/// DataQ Error Source
+/// Error Source
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant, variant_size_differences)]
-crate enum ErrSource {
+pub(crate) enum ErrSource {
     /// An I/O error
     Io(std::io::Error),
     /// An error deserializing TOML
@@ -65,10 +65,10 @@ impl std::error::Error for ErrSource {}
 impl fmt::Display for ErrSource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Io(source) => write!(f, "{}", source),
-            Self::TomlDe(source) => write!(f, "{}", source),
-            Self::TomlSer(source) => write!(f, "{}", source),
-            Self::Var(source) => write!(f, "{}", source),
+            Self::Io(source) => write!(f, "{source}"),
+            Self::TomlDe(source) => write!(f, "{source}"),
+            Self::TomlSer(source) => write!(f, "{source}"),
+            Self::Var(source) => write!(f, "{source}"),
         }
     }
 }

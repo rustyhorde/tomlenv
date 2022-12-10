@@ -35,7 +35,7 @@ impl<'de> Deserialize<'de> for Environment {
     {
         struct EnvironmentVisitor;
 
-        impl<'de> de::Visitor<'de> for EnvironmentVisitor {
+        impl de::Visitor<'_> for EnvironmentVisitor {
             type Value = Environment;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -72,11 +72,11 @@ impl fmt::Display for Environment {
             Environment::Dev => "dev",
             Environment::Local => "local",
         };
-        write!(f, "{}", env)
+        write!(f, "{env}")
     }
 }
 
-impl<'a> TryFrom<&'a str> for Environment {
+impl TryFrom<&str> for Environment {
     type Error = Error;
 
     fn try_from(env: &str) -> Result<Self> {

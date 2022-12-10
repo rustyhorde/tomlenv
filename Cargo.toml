@@ -16,11 +16,13 @@ repository = "https://github.com/rustyhorde/tomlenv"
 version = "0.4.1"
 
 [dependencies]
-clap = "2"
-getset = "0"
-serde = "1"
-serde_derive = "1"
-toml = "0"
+clap = "2.34.0"
+getset = "0.1.2"
+serde = { version = "1.0.149", features = ["derive"] }
+toml = "0.5.9"
 
 [dev-dependencies]
-dirs = "1"
+dirs = "1.0.5"
+
+[build-dependencies]
+rustversion = "1.0.9"

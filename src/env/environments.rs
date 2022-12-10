@@ -9,9 +9,7 @@
 //! `tomlenv` environments configuration
 use crate::error::{Error, Result};
 use clap::ArgMatches;
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-use serde_derive::{Deserialize as De, Serialize as Ser};
+use serde::{de::DeserializeOwned, ser::Serialize, Deserialize, Serialize as Ser};
 use std::{
     collections::BTreeMap,
     convert::TryFrom,
@@ -20,7 +18,6 @@ use std::{
     io::Read,
     path::{Path, PathBuf},
 };
-use toml;
 
 /// Hold environment specific data as a map from your environment hierarchy key to data struct
 /// containg the config for that particular environment.
@@ -31,7 +28,7 @@ use toml;
 /// # use tomlenv::{Environment, Environments, Error, Result};
 /// # use std::env;
 /// # use std::io::Cursor;
-/// # use serde_derive::{Deserialize, Serialize};
+/// # use serde::{Deserialize, Serialize};
 /// # use getset::Getters;
 /// #
 /// # fn foo() -> Result<()> {
@@ -95,7 +92,7 @@ use toml;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Clone, Debug, De, Ser)]
+#[derive(Clone, Debug, Deserialize, Ser)]
 pub struct Environments<S, T>
 where
     S: Ord,
@@ -110,6 +107,9 @@ where
     S: DeserializeOwned + Serialize + Ord + PartialOrd + TryFrom<String>,
 {
     /// Load the environments from a path.
+    ///
+    /// # Errors
+    ///
     pub fn from_path(path: &Path) -> Result<Self> {
         match File::open(path) {
             Ok(mut file) => {
@@ -125,6 +125,9 @@ where
     }
 
     /// Load the environments from a reader.
+    ///
+    /// # Errors
+    ///
     pub fn from_reader<R>(reader: &mut R) -> Result<Self>
     where
         R: Read,
@@ -135,18 +138,23 @@ where
     }
 
     /// Get the current environment
+    ///
+    /// # Errors
+    ///
     pub fn current(&self) -> Result<&T> {
         self.current_from("env")
     }
 
     /// Get the current environment from the given variable
+    ///
+    /// # Errors
+    ///
     pub fn current_from(&self, var: &'static str) -> Result<&T> {
         let environment = TryFrom::try_from(env::var(var)?)
             .map_err(|_e| Error::invalid_current_environment(var))?;
-        Ok(self
-            .envs
+        self.envs
             .get(&environment)
-            .ok_or_else(|| Error::invalid_current_environment(var))?)
+            .ok_or_else(|| Error::invalid_current_environment(var))
     }
 }
 
@@ -164,7 +172,7 @@ where
             PathBuf::from("env.toml")
         };
 
-        Ok(Environments::from_path(env_path.as_path())?)
+        Environments::from_path(env_path.as_path())
     }
 }
 
@@ -175,7 +183,7 @@ mod test {
     use clap::{App, Arg};
     use dirs;
     use getset::Getters;
-    use serde_derive::{Deserialize, Serialize};
+    use serde::{Deserialize, Serialize};
     use std::{
         collections::BTreeMap,
         convert::TryFrom,
@@ -281,11 +289,11 @@ name = "Local"
             name: "Local".to_string(),
             key: None,
         };
-        let _ = envs.insert(Environment::Prod, prod);
-        let _ = envs.insert(Environment::Stage, stage);
-        let _ = envs.insert(Environment::Test, test);
-        let _ = envs.insert(Environment::Dev, dev);
-        let _ = envs.insert(Environment::Local, local);
+        let _b = envs.insert(Environment::Prod, prod);
+        let _b = envs.insert(Environment::Stage, stage);
+        let _b = envs.insert(Environment::Test, test);
+        let _b = envs.insert(Environment::Dev, dev);
+        let _b = envs.insert(Environment::Local, local);
 
         let environments = Environments { envs };
 
